@@ -20,7 +20,7 @@ text_skin: dark # "default" (default), "dark", "forest", "ocean", "chocolate", "
 highlight_theme: default # "tomorrow-night" (default), "tomorrow", "tomorrow-night", "tomorrow-night-eighties", "tomorrow-night-blue", "tomorrow-night-bright"
 url     : https://frizzledynasty.github.io # the base hostname & protocol for your site e.g. https://www.someone.com
 baseurl : # does not include hostname
-title   : Data Science, R, Python, Statistics and more.
+title   : Andre Larsson. Data Science, R, Python, Statistics and more.
 description: > # this means to ignore newlines until "Language & timezone"
   Blogging about data science 
 
@@ -118,31 +118,16 @@ sharing:
 ## => Comments
 ##############################
 comments:
-  provider: false # false (default), "disqus", "gitalk", "valine", "custom"
-
-  ## Disqus
-  disqus:
-    shortname: # the Disqus shortname for the site
-
+  provider: gitalk # false (default), "disqus", "gitalk", "valine", "custom"
   ## Gitalk
   # please refer to https://github.com/gitalk/gitalk for more info.
   gitalk:
-    clientID    : # GitHub Application Client ID
-    clientSecret: # GitHub Application Client Secret
-    repository  : # GitHub repo
-    owner       : # GitHub repo owner
+    clientID    : a96c29e1d5cd78fabf81 # GitHub Application Client ID
+    clientSecret: ad6e6a597ce6a5c961596e04ce6a0f9841e05c9c # GitHub Application Client Secret
+    repository  : al-gitalk-comm # GitHub repo
+    owner       : andre-larsson # GitHub repo owner
     admin: # GitHub repo owner and collaborators, only these guys can initialize GitHub issues, IT IS A LIST.
-      # - your GitHub Id
-
-  ## Valine
-  # please refer to https://valine.js.org/en/ for more info.
-  valine:
-    app_id      : # LeanCloud App id
-    app_key     : # LeanCloud App key
-    placeholder : # Prompt information
-    visitor     : # false (default)
-    meta        : # "[nick, mail, link]" (default) nickname, E-mail, Personal-site
-
+    - andre-larsson  # - your GitHub Id
 
 ## => Pageview
 ##############################
