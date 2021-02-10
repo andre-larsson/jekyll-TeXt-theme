@@ -200,6 +200,10 @@ defaults:
       show_subscribe: true
       pageview: true
 
+## added (andre)
+
+feed:
+  tags: true
 
 ## => Plugins
 ##############################
