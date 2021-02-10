@@ -35,6 +35,10 @@ The topics that likely will be covered are
 - Procrastination
 - Other software tutorials
 
+[RSS](https://andre-larsson.github.io/feed.xml) | 
+[https://andre-larsson.github.io/](https://andre-larsson.github.io/)
+
+
 # Contact
 
 [Email](mailto:larsson.andre@gmail.com)
@@ -42,3 +46,4 @@ The topics that likely will be covered are
 [LinkedIn](https://www.linkedin.com/in/andre-ts-larsson)
 
 [Github](https://github.com/andre-larsson)
+
