@@ -37,6 +37,7 @@ output:
       - [Data preparation](#data-preparation)
       - [Defining the model](#defining-the-model)
       - [Create final model and submit result](#create-final-model-and-submit-result)
+  - [Conclusion](#conclusion)
 
 # Introduction
 
@@ -1307,7 +1308,9 @@ colnames(subm) = c("Id", "SalePrice")
 write.csv(subm, "submission.csv", row.names=FALSE)
 ```
 
-The best score I was able to get using this approach and these parameter values was 0.131 when submitting to the Kaggle leaderboard. Interestingly, a substantial improvement to the result from the Random Forest model, showing how in this case XGBoost is able to improve the prediction even further compared to RandomForests, when building models sequentially training on the errors of the previous models. \# Conclusion
+The best score I was able to get using this approach and these parameter values was 0.131 when submitting to the Kaggle leaderboard. Interestingly, a substantial improvement to the result from the Random Forest model, showing how in this case XGBoost is able to improve the prediction even further compared to RandomForests, when building models sequentially training on the errors of the previous models.
+
+# Conclusion
 
 At the end of this tutorial, we have made a submission to Kaggle that deals with a varied set of features related to housing prices, in which we had to deal with missing values and where we predicted the sale price using Random Forests and XGBoost.
 
