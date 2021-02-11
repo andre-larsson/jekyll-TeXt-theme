@@ -118,16 +118,9 @@ sharing:
 ## => Comments
 ##############################
 comments:
-  provider: gitalk # false (default), "disqus", "gitalk", "valine", "custom"
-  ## Gitalk
-  # please refer to https://github.com/gitalk/gitalk for more info.
-  gitalk:
-    clientID    : a96c29e1d5cd78fabf81 # GitHub Application Client ID
-    clientSecret: ad6e6a597ce6a5c961596e04ce6a0f9841e05c9c # GitHub Application Client Secret
-    repository  : al-gitalk-comm # GitHub repo
-    owner       : andre-larsson # GitHub repo owner
-    admin: # GitHub repo owner and collaborators, only these guys can initialize GitHub issues, IT IS A LIST.
-    - andre-larsson  # - your GitHub Id
+  provider: disqus # false (default), "disqus", "gitalk", "valine", "custom"
+  disqus:
+    shortname: "blog-github"
 
 ## => Pageview
 ##############################
