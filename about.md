@@ -35,7 +35,6 @@ The topics that likely will be covered are
 - Procrastination
 - Other software tutorials
 
-[RSS](https://andre-larsson.github.io/feed.xml) | 
 [https://andre-larsson.github.io/](https://andre-larsson.github.io/)
 
 
