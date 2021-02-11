@@ -320,7 +320,7 @@ all_data = all_data %>%
   mutate(GarageYrBlt = ifelse(GarageYrBlt>2010, YearBuilt, GarageYrBlt))
 ```
 
-Otherwise, except for the missing values which we save for later, I cannot spot any obvious error in these datasets from this very simple analys, and we will move on.
+Otherwise, except for the missing values which we save for later, I cannot spot any obvious error in these datasets from this very simple analysis, and we will move on.
 
 ## Check categorical variables for errors
 
@@ -455,7 +455,7 @@ Despite this, we will treat the status of our dataset at this point to be “goo
 
 ## Imputation with missForest
 
-First, we see that although many (=21) features still have missing values, only LotFrontage and GarageYrBlt have more than 1% missing, after replacing NA’s with Absent where applicable accoridng to description (ignoring the target variable SalePrice).
+First, we see that although many (=21) features still have missing values, only LotFrontage and GarageYrBlt have more than 1% missing, after replacing NA’s with Absent where applicable according to description (ignoring the target variable SalePrice).
 
 ``` r
 pm = perc_missing(all_data)
@@ -1274,7 +1274,7 @@ plot(val_y, calc_RMSE(xgb.fit, val_X, target=val_y, log=TRUE, all_errors=TRUE)$e
 
 ## Create final model and submit result
 
-For the final model used in the Kaggle submission, we train on all availible training data (training + validation) with the same parameters as the best model found above.
+For the final model used in the Kaggle submission, we train on all available training data (training + validation) with the same parameters as the best model found above.
 
 ``` r
 trainall_y = log(tt$train$SalePrice)
@@ -1311,7 +1311,7 @@ The best score I was able to get using this approach and these parameter values 
 
 At the end of this tutorial, we have made a submission to Kaggle that deals with a varied set of features related to housing prices, in which we had to deal with missing values and where we predicted the sale price using Random Forests and XGBoost.
 
-To handle the missing values, we used the package missForest available in R which imputed the missing values with a Random Forest algorithm. Though not touched upon in this tutorial, my own casual observation is that missForest does improve accuracy of our final score compared to that of a simpler imputation (e.g. replacing all missing values with their means/mode), but at the cost of time-consuming computations, and my feeling is that in a production environment where new data is continously added, one should use the simpler, less computationally-intensive way of imputation using the means/modes.
+To handle the missing values, we used the package missForest available in R which imputed the missing values with a Random Forest algorithm. Though not touched upon in this tutorial, my own casual observation is that missForest does improve accuracy of our final score compared to that of a simpler imputation (e.g. replacing all missing values with their means/mode), but at the cost of time-consuming computations, and my feeling is that in a production environment where new data is continuously added, one should use the simpler, less computationally-intensive way of imputation using the means/modes.
 
 Moving on, we found that the best score on the test set was obtained with a XGBoost model, which placed us, at the time of writing, at the (upper) 30-40 percentiles of scores.
 
