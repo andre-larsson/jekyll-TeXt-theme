@@ -38,12 +38,18 @@ output:
       - [Defining the model](#defining-the-model)
       - [Create final model and submit result](#create-final-model-and-submit-result)
   - [Conclusion](#conclusion)
+  - [Addendum: Catboost](#addendum-catboost)
+      - [Installation](#installation)
+      - [Preparing the data](#preparing-the-data)
+      - [Training the model](#training-the-model)
+      - [Obtaining predictions on test set](#obtaining-predictions-on-test-set)
+      - [Save file and submit to Kaggle](#save-file-and-submit-to-kaggle)
 
 # Introduction
 
 This tutorial will go through the steps to make an initial submission to Kaggle competition *House Prices - Advanced Regression Techniques* available at <https://www.kaggle.com/c/house-prices-advanced-regression-techniques>, using R for the analysis.
 
-As it is an old competition, currently in the *Getting Started Prediction* category at Kaggle, there are no prizes to win, but it can be a great exercise for getting comfortable working with tabular data. I find that although (or because of?) it is an older competition, Kaggle competitions can be pretty competitive, and while the main focus of this tutorial is learning, I hope that this tutorial also could provide a good starting point for anyone new to this dataset intending to reach for higher scores. In summary this tutorial will cover
+This competition is currently in the *Getting Started Prediction* category at Kaggle, there are no prizes to win, but it can be a great exercise for getting comfortable working with tabular data. I find that although (or because of?) it is an older competition, Kaggle competitions can be pretty competitive, and while the main focus of this tutorial is learning, I hope that this tutorial also could provide a good starting point for anyone new to this dataset intending to reach for higher scores. In summary this tutorial will cover
 
   - Basic data manipulation with dplyr.
   - Feature selection using recursive feature elimination.
@@ -486,6 +492,27 @@ missForest uses random forests to predict values for the NA’s in the dataset. 
 require(missForest)
 ```
 
+    ## Loading required package: missForest
+
+    ## Loading required package: randomForest
+
+    ## randomForest 4.6-14
+
+    ## Type rfNews() to see new features/changes/bug fixes.
+
+    ## 
+    ## Attaching package: 'randomForest'
+
+    ## The following object is masked from 'package:dplyr':
+    ## 
+    ##     combine
+
+    ## Loading required package: foreach
+
+    ## Loading required package: itertools
+
+    ## Loading required package: iterators
+
 Important parameters that we will change here the Random Forest algorithm are ntree, the number of trees in each forest, maxiter, the maximum number of iterations, but see also the documentation (the one you get by typing ?missForest in R) for more information.
 
 We will reduce the number of trees to 10 (from 100) and keep maxiter at 10, and having all other parameters at their default values, as this seems to work well for the current problem.
@@ -561,24 +588,6 @@ imp_result = missForest(select(all_data, -SalePrice), maxiter=10, ntree=10) # !!
     ## sure you want to do regression?
 
     ## done!
-    ##   missForest iteration 8 in progress...
-
-    ## Warning in randomForest.default(x = obsX, y = obsY, ntree = ntree, mtry = mtry, : The response has five or fewer unique values. Are you
-    ## sure you want to do regression?
-    
-    ## Warning in randomForest.default(x = obsX, y = obsY, ntree = ntree, mtry = mtry, : The response has five or fewer unique values. Are you
-    ## sure you want to do regression?
-
-    ## done!
-    ##   missForest iteration 9 in progress...
-
-    ## Warning in randomForest.default(x = obsX, y = obsY, ntree = ntree, mtry = mtry, : The response has five or fewer unique values. Are you
-    ## sure you want to do regression?
-    
-    ## Warning in randomForest.default(x = obsX, y = obsY, ntree = ntree, mtry = mtry, : The response has five or fewer unique values. Are you
-    ## sure you want to do regression?
-
-    ## done!
 
 ``` r
 # ' missForest additionally gives us the out-of-bag (OOB) errors calculated by comparing imputed values to
@@ -589,7 +598,7 @@ imp_result$OOBerror
 ```
 
     ##      NRMSE        PFC 
-    ## 0.03179195 0.03478810
+    ## 0.03336438 0.03371619
 
 The error rate introduced by imputation of the missing data is estimated at about 4%, which does not seem to bad. We save this result and verify that no values are missing.
 
@@ -668,13 +677,13 @@ Next we evaluate our model by calculating the RMSE (Log) on both train and valid
 calc_RMSE(rf.1, s$train, log=TRUE)
 ```
 
-    ## [1] 0.07462615
+    ## [1] 0.07046209
 
 ``` r
 calc_RMSE(rf.1, s$val, log=TRUE)
 ```
 
-    ## [1] 0.1348091
+    ## [1] 0.1616448
 
 When I run it, I get a higher error for the validation set, however, the first two significant digits of the error for both the training/validation does not change when increasing the number of trees ntree by a factor 10 (simulations not shown here), suggesting that having more trees than 200 will not result in any significant improvement, but also that adding more trees does not reduce the performance by overfitting.
 
@@ -683,13 +692,13 @@ rf.11 = randomForest(SalePrice ~ ., data=s$train, importance=TRUE, nodesize=10, 
 calc_RMSE(rf.11, s$train, log=TRUE)
 ```
 
-    ## [1] 0.07403767
+    ## [1] 0.06942862
 
 ``` r
 calc_RMSE(rf.11, s$val, log=TRUE)
 ```
 
-    ## [1] 0.1330932
+    ## [1] 0.1603187
 
 With this, we now have a baseline result from the Random Forest model above (using ntree=200). To further analyse the Random Forest model, lets plot the (squared) errors as a function of (log) SalePrice to see if there is any region in SalePrice where the model performs best/worst.
 
@@ -724,85 +733,85 @@ print(imp)
 ```
 
     ##                   %IncMSE IncNodePurity
-    ## MSSubClass    13.94828540  8.537607e+10
-    ## MSZoning       5.20953566  8.693113e+09
-    ## LotFrontage    3.32240198  6.686194e+10
-    ## LotArea        8.63612496  9.001305e+10
-    ## Street         0.00000000  1.525113e+07
-    ## Alley          2.28940631  1.890624e+09
-    ## LotShape       1.85828577  8.991048e+09
-    ## LandContour    0.78165860  1.201193e+10
-    ## Utilities      0.00000000  0.000000e+00
-    ## LotConfig     -0.25436435  6.148034e+09
-    ## LandSlope      0.02868953  5.608428e+09
-    ## Neighborhood  16.43919739  5.951878e+11
-    ## Condition1     0.93448371  4.291198e+09
-    ## Condition2     0.00000000  9.826347e+07
-    ## BldgType       2.86931642  2.487355e+09
-    ## HouseStyle     5.63338578  1.095229e+10
-    ## OverallQual   14.37079299  1.901925e+12
-    ## OverallCond    5.42901017  1.821344e+10
-    ## YearBuilt      6.72594092  1.586183e+11
-    ## YearRemodAdd   5.42076143  3.794508e+10
-    ## RoofStyle      1.95772714  4.601820e+09
-    ## RoofMatl      -1.13178897  2.237628e+09
-    ## Exterior1st    5.06659316  4.467979e+10
-    ## Exterior2nd    5.57089140  4.131884e+10
-    ## MasVnrType     3.22689957  5.410232e+09
-    ## MasVnrArea     3.50786897  4.095333e+10
-    ## ExterQual      6.86463758  4.315535e+11
-    ## ExterCond      0.39664800  4.074968e+09
-    ## Foundation     3.32878587  6.093636e+09
-    ## BsmtQual       6.28535101  2.791654e+11
-    ## BsmtCond       2.92281567  5.064502e+09
-    ## BsmtExposure   2.48078928  2.182818e+10
-    ## BsmtFinType1   9.27219325  2.689165e+10
-    ## BsmtFinSF1     8.53113551  1.769531e+11
-    ## BsmtFinType2  -0.92990215  3.312520e+09
-    ## BsmtFinSF2     1.80435906  2.274085e+09
-    ## BsmtUnfSF      4.44901758  3.062591e+10
-    ## TotalBsmtSF   11.67709552  2.522547e+11
-    ## Heating       -0.93441428  1.181318e+09
-    ## HeatingQC      2.53746326  6.977427e+09
-    ## CentralAir     7.47321129  1.562434e+10
-    ## Electrical    -2.19439050  1.218730e+09
-    ## X1stFlrSF     11.31890268  2.367449e+11
-    ## X2ndFlrSF     10.33234768  7.458474e+10
-    ## LowQualFinSF   1.68086049  2.439087e+09
-    ## GrLivArea     20.98920220  7.207352e+11
-    ## BsmtFullBath   3.68217098  8.718224e+09
-    ## BsmtHalfBath   1.36993191  9.584828e+08
-    ## FullBath       4.90949521  8.935012e+10
-    ## HalfBath       4.11247888  4.461927e+09
-    ## BedroomAbvGr   2.32784822  1.415470e+10
-    ## KitchenAbvGr   2.33223016  1.063762e+09
-    ## KitchenQual    6.62440472  2.138217e+11
-    ## TotRmsAbvGrd   2.92439039  5.634508e+10
-    ## Functional     2.09159503  3.394030e+09
-    ## Fireplaces     5.58035006  2.373917e+10
-    ## FireplaceQu    7.72604918  6.031233e+10
-    ## GarageType     5.58240876  3.494757e+10
-    ## GarageYrBlt    2.42426712  3.837650e+10
-    ## GarageFinish   5.41466994  5.168643e+10
-    ## GarageCars    10.89518933  6.186495e+11
-    ## GarageArea     8.69859534  1.967675e+11
-    ## GarageQual     1.18784590  7.185648e+09
-    ## GarageCond     2.19416640  5.250321e+09
-    ## PavedDrive     2.16316199  2.792274e+09
-    ## WoodDeckSF     4.28441065  2.143519e+10
-    ## OpenPorchSF    6.01244998  2.192954e+10
-    ## EnclosedPorch -0.15250179  2.112278e+09
-    ## X3SsnPorch     0.94110007  1.502575e+09
-    ## ScreenPorch    1.70749194  5.406866e+09
-    ## PoolArea       0.00000000  4.942437e+09
-    ## PoolQC         1.00250941  6.166950e+09
-    ## Fence          1.77321395  6.946657e+09
-    ## MiscFeature    0.72043205  2.281530e+08
-    ## MiscVal       -1.57902954  4.192645e+08
-    ## MoSold        -1.03270568  1.237473e+10
-    ## YrSold        -0.55112362  4.852335e+09
-    ## SaleType       1.49536958  6.487723e+09
-    ## SaleCondition  1.22189311  1.297315e+10
+    ## MSSubClass    12.84605639  8.281970e+10
+    ## MSZoning       3.74508008  6.853436e+09
+    ## LotFrontage    4.39107307  3.709595e+10
+    ## LotArea        6.58381049  7.434984e+10
+    ## Street         1.00250941  3.941767e+07
+    ## Alley          1.91837963  1.941784e+09
+    ## LotShape       1.64028418  7.440053e+09
+    ## LandContour   -1.58974431  7.141523e+09
+    ## Utilities      0.00000000  8.851323e+06
+    ## LotConfig      0.96648222  1.004356e+10
+    ## LandSlope      0.43879877  2.259115e+09
+    ## Neighborhood  16.76391123  8.098671e+11
+    ## Condition1     1.17208872  4.148986e+09
+    ## Condition2     0.28846169  1.699123e+08
+    ## BldgType       3.34385130  3.175804e+09
+    ## HouseStyle     4.06058325  6.876994e+09
+    ## OverallQual   14.24597138  1.611958e+12
+    ## OverallCond    4.00035721  2.001098e+10
+    ## YearBuilt      5.28863450  5.641135e+10
+    ## YearRemodAdd   5.26719822  3.938568e+10
+    ## RoofStyle      0.51544384  5.791698e+09
+    ## RoofMatl       1.49648998  3.706796e+09
+    ## Exterior1st    4.51961267  3.649105e+10
+    ## Exterior2nd    5.37819487  4.433319e+10
+    ## MasVnrType     2.81127648  6.159362e+09
+    ## MasVnrArea     2.32293162  3.515422e+10
+    ## ExterQual      8.39209792  5.731137e+11
+    ## ExterCond      1.51761350  3.469629e+09
+    ## Foundation     5.09076149  4.319645e+09
+    ## BsmtQual       6.54930513  1.796095e+11
+    ## BsmtCond       3.57606675  6.405939e+09
+    ## BsmtExposure   4.16428480  1.810295e+10
+    ## BsmtFinType1   5.62280387  2.316542e+10
+    ## BsmtFinSF1     9.87434266  1.490848e+11
+    ## BsmtFinType2   1.21489582  4.703409e+09
+    ## BsmtFinSF2     1.02294339  3.614480e+09
+    ## BsmtUnfSF      6.30861686  2.554345e+10
+    ## TotalBsmtSF    9.64263602  2.681220e+11
+    ## Heating       -1.12323552  3.641040e+08
+    ## HeatingQC      1.26481158  6.323270e+09
+    ## CentralAir     6.30340765  1.425191e+10
+    ## Electrical     0.07832025  1.122232e+09
+    ## X1stFlrSF     11.18438187  2.456017e+11
+    ## X2ndFlrSF      8.20065538  1.003543e+11
+    ## LowQualFinSF  -0.09338836  2.047265e+09
+    ## GrLivArea     21.89810237  7.764230e+11
+    ## BsmtFullBath   4.06199330  7.935079e+09
+    ## BsmtHalfBath  -0.69358267  7.212215e+08
+    ## FullBath       4.39229459  4.925970e+10
+    ## HalfBath       2.16870203  8.200302e+09
+    ## BedroomAbvGr   3.82840961  1.040001e+10
+    ## KitchenAbvGr   1.82768672  1.993486e+09
+    ## KitchenQual    4.95723833  1.963257e+11
+    ## TotRmsAbvGrd   3.52734605  6.866472e+10
+    ## Functional     2.51809690  5.000037e+09
+    ## Fireplaces     3.84601388  2.952625e+10
+    ## FireplaceQu    8.41291068  6.493834e+10
+    ## GarageType     6.78367760  3.513616e+10
+    ## GarageYrBlt    6.94059095  2.097304e+10
+    ## GarageFinish   4.94465944  4.538122e+10
+    ## GarageCars     6.04108289  4.898588e+11
+    ## GarageArea    10.04695501  2.343051e+11
+    ## GarageQual     3.20603381  6.672819e+09
+    ## GarageCond     2.99877944  5.173845e+09
+    ## PavedDrive     0.72832423  2.787904e+09
+    ## WoodDeckSF     3.76277047  1.768825e+10
+    ## OpenPorchSF    4.16496291  2.400444e+10
+    ## EnclosedPorch  0.21423929  4.136588e+09
+    ## X3SsnPorch     1.40214201  1.238475e+09
+    ## ScreenPorch   -0.29992571  5.181233e+09
+    ## PoolArea       0.00000000  9.404562e+08
+    ## PoolQC        -1.00250941  1.351085e+09
+    ## Fence          0.80252563  2.307690e+09
+    ## MiscFeature   -1.25845352  4.159301e+08
+    ## MiscVal        1.14971518  5.949758e+08
+    ## MoSold        -1.72093675  1.094121e+10
+    ## YrSold        -0.76470137  6.650601e+09
+    ## SaleType       2.59370364  8.831711e+09
+    ## SaleCondition  3.25312488  6.618408e+09
 
 It seems that there are many variables making small contributions to the total prediction, and we keep as many as possible as we there are many features and we haven’t fully explored the interdependencies.
 
@@ -817,7 +826,7 @@ min_imp = -1 # to run loop at least one time
 while(min_imp<0){
   tt = get_tt(m_data) # split all data to training/test (again)
   s = split_data(tt$train) # split training to training/validation (again)
-  rf.temp = randomForest(SalePrice ~ ., data=s$train, importance=TRUE, nodesize=10, ntree=200) #!!!
+  rf.temp = randomForest(SalePrice ~ ., data=s$train, importance=TRUE, nodesize=10, ntree=200)
   imp = importance(rf.temp)
   imp_worst = which.min(imp[,1])
   min_imp = imp[imp_worst,1]
@@ -838,244 +847,199 @@ while(min_imp<0){
 ```
 
     ## [1] "Variable with least importance:"
-    ## LotShape 
-    ##        7 
-    ## Min. importance: -1.815413 
+    ## Electrical 
+    ##         42 
+    ## Min. importance: -1.937437 
     ## Variables in original dataset: 81 . Variables in new dataset: 80 
     ## [1] "Variable with least importance:"
-    ## Heating 
-    ##      38 
-    ## Min. importance: -2.142186 
+    ## PoolArea 
+    ##       70 
+    ## Min. importance: -1.633364 
     ## Variables in original dataset: 81 . Variables in new dataset: 79 
     ## [1] "Variable with least importance:"
-    ## YrSold 
-    ##     75 
-    ## Min. importance: -2.110181 
+    ## LotConfig 
+    ##        10 
+    ## Min. importance: -1.740129 
     ## Variables in original dataset: 81 . Variables in new dataset: 78 
+    ## [1] "Variable with least importance:"
+    ## LowQualFinSF 
+    ##           43 
+    ## Min. importance: -1.342515 
+    ## Variables in original dataset: 81 . Variables in new dataset: 77 
     ## [1] "Variable with least importance:"
     ## RoofMatl 
     ##       21 
-    ## Min. importance: -1.620655 
-    ## Variables in original dataset: 81 . Variables in new dataset: 77 
-    ## [1] "Variable with least importance:"
-    ## BsmtHalfBath 
-    ##           45 
-    ## Min. importance: -1.439187 
+    ## Min. importance: -1.844842 
     ## Variables in original dataset: 81 . Variables in new dataset: 76 
     ## [1] "Variable with least importance:"
     ## MiscFeature 
-    ##          70 
-    ## Min. importance: -1.939519 
+    ##          69 
+    ## Min. importance: -2.121014 
     ## Variables in original dataset: 81 . Variables in new dataset: 75 
     ## [1] "Variable with least importance:"
-    ## X3SsnPorch 
-    ##         65 
-    ## Min. importance: -1.69245 
+    ## YrSold 
+    ##     71 
+    ## Min. importance: -1.533271 
     ## Variables in original dataset: 81 . Variables in new dataset: 74 
-    ## [1] "Variable with least importance:"
-    ## Heating 
-    ##      36 
-    ## Min. importance: -1.68866 
-    ## Variables in original dataset: 81 . Variables in new dataset: 73 
     ## [1] "Variable with least importance:"
     ## RoofMatl 
     ##       20 
-    ## Min. importance: -1.792645 
+    ## Min. importance: -2.072388 
+    ## Variables in original dataset: 81 . Variables in new dataset: 73 
+    ## [1] "Variable with least importance:"
+    ## YrSold 
+    ##     69 
+    ## Min. importance: -2.288397 
     ## Variables in original dataset: 81 . Variables in new dataset: 72 
     ## [1] "Variable with least importance:"
-    ## LandContour 
-    ##           7 
-    ## Min. importance: -1.314049 
+    ## Street 
+    ##      5 
+    ## Min. importance: -1.740176 
     ## Variables in original dataset: 81 . Variables in new dataset: 71 
     ## [1] "Variable with least importance:"
-    ## Condition2 
-    ##         12 
-    ## Min. importance: -1.562408 
+    ## LowQualFinSF 
+    ##           39 
+    ## Min. importance: -1.422772 
     ## Variables in original dataset: 81 . Variables in new dataset: 70 
     ## [1] "Variable with least importance:"
-    ## MiscVal 
-    ##      65 
-    ## Min. importance: -1.475161 
+    ## MiscFeature 
+    ##          65 
+    ## Min. importance: -1.557098 
     ## Variables in original dataset: 81 . Variables in new dataset: 69 
     ## [1] "Variable with least importance:"
-    ## PoolArea 
-    ##       62 
-    ## Min. importance: -1.843396 
+    ## Street 
+    ##      4 
+    ## Min. importance: -1.421266 
     ## Variables in original dataset: 81 . Variables in new dataset: 68 
     ## [1] "Variable with least importance:"
-    ## PoolQC 
-    ##     62 
-    ## Min. importance: -1.414819 
+    ## RoofMatl 
+    ##       17 
+    ## Min. importance: -1.746962 
     ## Variables in original dataset: 81 . Variables in new dataset: 67 
     ## [1] "Variable with least importance:"
-    ## MiscVal 
-    ##      62 
-    ## Min. importance: -2.40238 
+    ## MiscFeature 
+    ##          62 
+    ## Min. importance: -1.671692 
     ## Variables in original dataset: 81 . Variables in new dataset: 66 
     ## [1] "Variable with least importance:"
-    ## MiscVal 
-    ##      61 
-    ## Min. importance: -1.824029 
+    ## LowQualFinSF 
+    ##           36 
+    ## Min. importance: -1.253548 
     ## Variables in original dataset: 81 . Variables in new dataset: 65 
     ## [1] "Variable with least importance:"
     ## LowQualFinSF 
-    ##           38 
-    ## Min. importance: -1.926025 
+    ##           35 
+    ## Min. importance: -1.832373 
     ## Variables in original dataset: 81 . Variables in new dataset: 64 
     ## [1] "Variable with least importance:"
-    ## Condition2 
-    ##         11 
-    ## Min. importance: -1.979578 
+    ## MiscFeature 
+    ##          59 
+    ## Min. importance: -1.730302 
     ## Variables in original dataset: 81 . Variables in new dataset: 63 
     ## [1] "Variable with least importance:"
     ## Condition2 
-    ##         10 
-    ## Min. importance: -1.029346 
+    ##         11 
+    ## Min. importance: -1.415822 
     ## Variables in original dataset: 81 . Variables in new dataset: 62 
     ## [1] "Variable with least importance:"
     ## Condition2 
-    ##          9 
-    ## Min. importance: -2.522418 
+    ##         10 
+    ## Min. importance: -1.46205 
     ## Variables in original dataset: 81 . Variables in new dataset: 61 
     ## [1] "Variable with least importance:"
-    ## LowQualFinSF 
-    ##           34 
-    ## Min. importance: -1.614837 
+    ## Condition2 
+    ##          9 
+    ## Min. importance: -1.785374 
     ## Variables in original dataset: 81 . Variables in new dataset: 60 
     ## [1] "Variable with least importance:"
-    ## Electrical 
-    ##         32 
-    ## Min. importance: -2.365893 
+    ## LotConfig 
+    ##         7 
+    ## Min. importance: -1.75339 
     ## Variables in original dataset: 81 . Variables in new dataset: 59 
     ## [1] "Variable with least importance:"
-    ## Electrical 
-    ##         31 
-    ## Min. importance: -1.313228 
+    ## LowQualFinSF 
+    ##           30 
+    ## Min. importance: -2.135262 
     ## Variables in original dataset: 81 . Variables in new dataset: 58 
-    ## [1] "Variable with least importance:"
-    ## RoofMatl 
-    ##       14 
-    ## Min. importance: -1.592968 
-    ## Variables in original dataset: 81 . Variables in new dataset: 57 
-    ## [1] "Variable with least importance:"
-    ## RoofMatl 
-    ##       13 
-    ## Min. importance: -2.188269 
-    ## Variables in original dataset: 81 . Variables in new dataset: 56 
-    ## [1] "Variable with least importance:"
-    ## RoofMatl 
-    ##       12 
-    ## Min. importance: -2.332414 
-    ## Variables in original dataset: 81 . Variables in new dataset: 55 
-    ## [1] "Variable with least importance:"
-    ## RoofMatl 
-    ##       11 
-    ## Min. importance: -1.688323 
-    ## Variables in original dataset: 81 . Variables in new dataset: 54 
-    ## [1] "Variable with least importance:"
-    ## RoofMatl 
-    ##       10 
-    ## Min. importance: -1.488006 
-    ## Variables in original dataset: 81 . Variables in new dataset: 53 
-    ## [1] "Variable with least importance:"
-    ## Condition2 
-    ##          8 
-    ## Min. importance: -1.862336 
-    ## Variables in original dataset: 81 . Variables in new dataset: 52 
     ## [1] "Variable with least importance:"
     ## Condition2 
     ##          7 
-    ## Min. importance: -0.9858868 
+    ## Min. importance: -1.721953 
+    ## Variables in original dataset: 81 . Variables in new dataset: 57 
+    ## [1] "Variable with least importance:"
+    ## Street 
+    ##      3 
+    ## Min. importance: -1.002509 
+    ## Variables in original dataset: 81 . Variables in new dataset: 56 
+    ## [1] "Variable with least importance:"
+    ## LowQualFinSF 
+    ##           27 
+    ## Min. importance: -1.038828 
+    ## Variables in original dataset: 81 . Variables in new dataset: 55 
+    ## [1] "Variable with least importance:"
+    ## RoofMatl 
+    ##       10 
+    ## Min. importance: -2.216398 
+    ## Variables in original dataset: 81 . Variables in new dataset: 54 
+    ## [1] "Variable with least importance:"
+    ## Street 
+    ##      2 
+    ## Min. importance: -1.681009 
+    ## Variables in original dataset: 81 . Variables in new dataset: 53 
+    ## [1] "Variable with least importance:"
+    ## RoofMatl 
+    ##        8 
+    ## Min. importance: -1.492722 
+    ## Variables in original dataset: 81 . Variables in new dataset: 52 
+    ## [1] "Variable with least importance:"
+    ## Condition2 
+    ##          4 
+    ## Min. importance: -2.055811 
     ## Variables in original dataset: 81 . Variables in new dataset: 51 
     ## [1] "Variable with least importance:"
     ## Condition2 
-    ##          6 
-    ## Min. importance: -2.033151 
+    ##          3 
+    ## Min. importance: -2.264846 
     ## Variables in original dataset: 81 . Variables in new dataset: 50 
     ## [1] "Variable with least importance:"
-    ## Electrical 
-    ##         22 
-    ## Min. importance: -1.584624 
+    ## Condition2 
+    ##          2 
+    ## Min. importance: -2.660484 
+    ## Variables in original dataset: 81 . Variables in new dataset: 49 
+    ## [1] "Variable with least importance:"
+    ## Condition2 
+    ##          1 
+    ## Min. importance: -1.478165 
     ## Variables in original dataset: 81 . Variables in new dataset: 49 
     ## [1] "Variable with least importance:"
     ## RoofMatl 
-    ##        6 
-    ## Min. importance: -1.400095 
+    ##        4 
+    ## Min. importance: -1.189817 
     ## Variables in original dataset: 81 . Variables in new dataset: 48 
     ## [1] "Variable with least importance:"
-    ## LowQualFinSF 
-    ##           21 
-    ## Min. importance: -0.1391719 
+    ## Condition2 
+    ##          1 
+    ## Min. importance: -1.802141 
     ## Variables in original dataset: 81 . Variables in new dataset: 47 
     ## [1] "Variable with least importance:"
     ## LowQualFinSF 
-    ##           20 
-    ## Min. importance: -1.755043 
+    ##           18 
+    ## Min. importance: -0.1308753 
     ## Variables in original dataset: 81 . Variables in new dataset: 46 
     ## [1] "Variable with least importance:"
-    ## LowQualFinSF 
-    ##           19 
-    ## Min. importance: -1.679535 
+    ## YrSold 
+    ##     42 
+    ## Min. importance: -1.192609 
     ## Variables in original dataset: 81 . Variables in new dataset: 45 
     ## [1] "Variable with least importance:"
-    ## YrSold 
-    ##     41 
-    ## Min. importance: -1.062073 
+    ## MiscFeature 
+    ##          41 
+    ## Min. importance: -0.8270808 
     ## Variables in original dataset: 81 . Variables in new dataset: 44 
     ## [1] "Variable with least importance:"
-    ## YrSold 
-    ##     40 
-    ## Min. importance: -2.095699 
-    ## Variables in original dataset: 81 . Variables in new dataset: 43 
-    ## [1] "Variable with least importance:"
-    ## RoofMatl 
-    ##        5 
-    ## Min. importance: -1.634689 
-    ## Variables in original dataset: 81 . Variables in new dataset: 42 
-    ## [1] "Variable with least importance:"
-    ## LowQualFinSF 
-    ##           17 
-    ## Min. importance: -1.2926 
-    ## Variables in original dataset: 81 . Variables in new dataset: 41 
-    ## [1] "Variable with least importance:"
-    ## RoofMatl 
-    ##        4 
-    ## Min. importance: -1.785696 
-    ## Variables in original dataset: 81 . Variables in new dataset: 40 
-    ## [1] "Variable with least importance:"
-    ## LowQualFinSF 
+    ## BsmtFinType2 
     ##           15 
-    ## Min. importance: -1.25113 
-    ## Variables in original dataset: 81 . Variables in new dataset: 39 
-    ## [1] "Variable with least importance:"
-    ## LowQualFinSF 
-    ##           14 
-    ## Min. importance: -0.9638666 
-    ## Variables in original dataset: 81 . Variables in new dataset: 38 
-    ## [1] "Variable with least importance:"
-    ## LowQualFinSF 
-    ##           13 
-    ## Min. importance: -0.6903612 
-    ## Variables in original dataset: 81 . Variables in new dataset: 37 
-    ## [1] "Variable with least importance:"
-    ## RoofMatl 
-    ##        3 
-    ## Min. importance: -1.432617 
-    ## Variables in original dataset: 81 . Variables in new dataset: 36 
-    ## [1] "Variable with least importance:"
-    ## LowQualFinSF 
-    ##           11 
-    ## Min. importance: -1.085729 
-    ## Variables in original dataset: 81 . Variables in new dataset: 35 
-    ## [1] "Variable with least importance:"
-    ## YrSold 
-    ##     31 
-    ## Min. importance: -1.890011 
-    ## Variables in original dataset: 81 . Variables in new dataset: 34 
-    ## [1] "Variable with least importance:"
-    ## SaleCondition 
-    ##            32 
-    ## Min. importance: 0.3700816 
+    ## Min. importance: 1.160883 
     ## No variable removed.
 
 Now let’s calculate the RMSE (log) of our model with the new set of features to compare it to the model with the original set.
@@ -1085,19 +1049,19 @@ cat("Variables in original dataset:", ncol(all_data),
     ". Variables in new dataset:", ncol(m_data), "\n")
 ```
 
-    ## Variables in original dataset: 81 . Variables in new dataset: 34
+    ## Variables in original dataset: 81 . Variables in new dataset: 44
 
 ``` r
 calc_RMSE(rf.temp, s$train, log=TRUE)
 ```
 
-    ## [1] 0.09553543
+    ## [1] 0.08389441
 
 ``` r
 calc_RMSE(rf.temp, s$val, log=TRUE)
 ```
 
-    ## [1] 0.1683352
+    ## [1] 0.1741376
 
 Interestingly, our model with removed variables performed worse on the validation compared to the original data set, despite only removing features with negative importance scores. Maybe this suggests large interdependence effects across the variables, with certain combinations of variables being important, relations cannot be seen when looking at the variables one by one.
 
@@ -1121,14 +1085,14 @@ print(rf.2)
     ##                      Number of trees: 2000
     ## No. of variables tried at each split: 26
     ## 
-    ##           Mean of squared residuals: 767505817
-    ##                     % Var explained: 87.83
+    ##           Mean of squared residuals: 771053379
+    ##                     % Var explained: 87.77
 
 ``` r
 calc_RMSE(rf.2, tt$train, log=TRUE)
 ```
 
-    ## [1] 0.07182295
+    ## [1] 0.07160225
 
 Looks similar to the result we got before on the training data (where we keept some observations for validation). We now use this model to get the predictions for SalePrince on the test set,
 
@@ -1155,6 +1119,12 @@ colnames(subm) = c("Id", "SalePrice")
 write.csv(subm, "submission.csv", row.names=FALSE)
 ```
 
+EDIT: When submitting the result to kaggle, I use the kaggle CLI. Whenever you make a submission you also have to provide the name of the competition you want to provide a solution for, the file you want to send, and a message, which I like to set to something as descriptive as possible to keep track of what I’ve tried. Follow the information obtained by running `kaggle --help` for more information. For me, I would likely submit the above result with
+
+``` r
+# kaggle competitions submit -c "house-prices-advanced-regression-techniques" -f "submission.csv" -m "randomForest ntree=2000 nodesize=10"
+```
+
 # XGBoost
 
 We will also train a model based on XGBoost. We begin by importing the *xgboost* package (install if need be, it is available at CRAN) which provide an R interface to the XGBoost algorithm.
@@ -1162,6 +1132,15 @@ We will also train a model based on XGBoost. We begin by importing the *xgboost*
 ``` r
 require(xgboost)
 ```
+
+    ## Loading required package: xgboost
+
+    ## 
+    ## Attaching package: 'xgboost'
+
+    ## The following object is masked from 'package:dplyr':
+    ## 
+    ##     slice
 
 XGBoost, short for extreme gradient boosting, uses boosting which sequentially adds models that trains on/corrects the errors made by previous models. As we will see it can be a powerful method able to bring about great results at relatively low computational cost, although with a risk of overfitting.
 
@@ -1176,6 +1155,11 @@ tt = get_tt(data_imp) # get training/test from imputed data
 
 # one-hot encoding of categorical variables
 require("fastDummies")
+```
+
+    ## Loading required package: fastDummies
+
+``` r
 tt$train = dummy_cols(tt$train, remove_selected_columns =TRUE, remove_first_dummy=TRUE)
 tt$test = dummy_cols(tt$test, remove_selected_columns   =TRUE, remove_first_dummy=TRUE)
 ```
@@ -1227,13 +1211,13 @@ Then calculate the error on both training and validation
 calc_RMSE(xgb.fit0, train_X, target=train_y, log=FALSE)
 ```
 
-    ## [1] 0.001050024
+    ## [1] 0.001065989
 
 ``` r
 calc_RMSE(xgb.fit0, val_X, target=val_y, log=FALSE)
 ```
 
-    ## [1] 0.1606479
+    ## [1] 0.133795
 
 Note that although we were able to get a very low error on the training data, the error on the validation was much higher. After some behind-the-scenes experimenting/scanning of parameter values, I found the parameters below to work better, providing a lower error on the validation set, feel free to see if you can find any improvements.
 
@@ -1249,13 +1233,13 @@ Again, when calculating the errors for training and validation, the above parame
 calc_RMSE(xgb.fit, train_X, target=train_y, log=FALSE)
 ```
 
-    ## [1] 0.0598248
+    ## [1] 0.06326491
 
 ``` r
 calc_RMSE(xgb.fit, val_X, target=val_y, log=FALSE)
 ```
 
-    ## [1] 0.1388961
+    ## [1] 0.1187995
 
 Now, we analyse the model by plotting the log-errors as a function of the log-SalePrice, as was done for the Random Forests. In the validation set, the errors seem evenly distributed, with no clear bias towards being better at predicting high/low sale prices, but with some outliers where the prediction was off by larger amounts.
 
@@ -1316,6 +1300,218 @@ At the end of this tutorial, we have made a submission to Kaggle that deals with
 
 To handle the missing values, we used the package missForest available in R which imputed the missing values with a Random Forest algorithm. Though not touched upon in this tutorial, my own casual observation is that missForest does improve accuracy of our final score compared to that of a simpler imputation (e.g. replacing all missing values with their means/mode), but at the cost of time-consuming computations, and my feeling is that in a production environment where new data is continuously added, one should use the simpler, less computationally-intensive way of imputation using the means/modes.
 
-Moving on, we found that the best score on the test set was obtained with a XGBoost model, which placed us, at the time of writing, at the (upper) 30-40 percentiles of scores.
+Moving on, we found that the best score on the test set was obtained with a XGBoost model. We attempted to reduce the number of features in our data set with recursive feature selection (RFE), where we only kept features that improved the out-of-bag (OOB) error of a recursively trained Random Forest model. However, as the end result of the RFE was a model with less accuracy on the validation set, we kept all variables for the final model. Though the RFE approach was unsuccessful and reduced the accuracy of the final model, the results presented here could provide some insight into the dataset, e.g. suggesting important variables.
 
-We attempted to reduce the number of features in our data set with recursive feature selection (RFE), where we only kept features that improved the out-of-bag (OOB) error of a recursively trained Random Forest model. However, as the end result of the RFE was a model with less accuracy on the validation set, we kept all variables for the final model. Though the RFE approach was unsuccessful and reduced the accuracy of the final model, the results presented here could provide some insight into the dataset, e.g. suggesting important variables.
+# Addendum: Catboost
+
+With catboost, which is a gradient boosting method specializing on categorical/mixed data, developed by [https://en.wikipedia.org/wiki/Yandex](Yandex), even better results were possible, out-of-the-box.
+
+As I was impressed with the performance, I will give a quick introduction on how to install and run a catboost model in this Addendum.
+
+## Installation
+
+The documentation [https://catboost.ai/docs/installation/r-installation-binary-installation.html](Install%20the%20released%20version) tells us to install catboost with
+
+``` r
+# install.packages('devtools')
+# devtools::install_url('BINARY_URL', INSTALL_opts = c("--no-multiarch"))
+```
+
+where BINARY\_URL is a link to the version you want to install. For example, the latest version at the time of writing (Windows) is <https://github.com/catboost/catboost/releases/download/v0.24.4/catboost-R-Windows-0.24.4.tgz> see e.g. <https://github.com/catboost/catboost/releases>.
+
+Unfortunately version 0.24.4 did not seem to work for me, as I seem to get a similar error as in <https://github.com/catboost/catboost/issues/1525>, Therefore, as a bonus, here are the R-commands required to unload the catboost package from the current R-environment and remove the package, so you can reinstall a new version, after restarting the R session,
+
+``` r
+# detach("package:catboost", unload=TRUE) # detach catboost from current R session
+# remove.packages("catboost") # uninstall catboost
+```
+
+As version 0.24.3 seems to work fine, we instead install this version, and load it
+
+``` r
+# devtools::install_url('https://github.com/catboost/catboost/releases/download/v0.24.3/catboost-R-Windows-0.24.3.tgz')
+require("catboost")
+```
+
+    ## Loading required package: catboost
+
+## Preparing the data
+
+As before we split the data to training/test, and then we split training to training/validation.
+
+``` r
+tt = get_tt(data_imp) # get training/test data
+s = split_data(tt$train) # split training to training/validation
+```
+
+Now we define the different datasets, training data, validation data, all training data (validation+training) and test data, in the format catboost wants,
+
+``` r
+train_pool = catboost.load_pool(data = select(s$train, -c("SalePrice")), label = log(s$train$SalePrice))
+val_pool = catboost.load_pool(data = select(s$val, -c("SalePrice")), label = log(s$val$SalePrice))
+alltrain_pool = catboost.load_pool(data = select(tt$train, -c("SalePrice")), label = log(tt$train$SalePrice))
+test_pool = catboost.load_pool(data = select(tt$test, -c("SalePrice")), label = log(tt$test$SalePrice))
+```
+
+## Training the model
+
+After some more hyperparameter tuning, I found a good parameter set to be depth = 4, learning\_rate = 0.01, iterations = 5000, l2\_leaf\_reg = 1, rsm = 0.1, border\_count = 254 and early\_stopping\_rounds=200. I will not go into the meanings of this parameters, but please see the catboost documentation for more details, and possibly find your own, even better, values. Now we will train the model. Note that the catboost.train function takes both a training dataset and a validation dataset, allowing us to monitor the performance on the validation set during the training.
+
+``` r
+cb.paras = list(loss_function = 'RMSE', iterations = 5000,
+                metric_period=100, depth=4, rsm=0.1,
+                border_count=254, learning_rate=0.01,
+                l2_leaf_reg=1, early_stopping_rounds=200)
+
+cb.model = catboost.train(train_pool,  val_pool, params = cb.paras)
+```
+
+    ## Warning: Overfitting detector is active, thus evaluation metric is calculated on every iteration. 'metric_period' is ignored for evaluation metric.
+    ## 0:   learn: 0.3955673    test: 0.4034571 best: 0.4034571 (0) total: 53.2ms   remaining: 4m 26s
+    ## 100: learn: 0.2467607    test: 0.2512793 best: 0.2512793 (100)   total: 940ms    remaining: 45.6s
+    ## 200: learn: 0.1836174    test: 0.1873397 best: 0.1873397 (200)   total: 1.84s    remaining: 43.9s
+    ## 300: learn: 0.1555228    test: 0.1617281 best: 0.1617281 (300)   total: 2.75s    remaining: 42.9s
+    ## 400: learn: 0.1409895    test: 0.1493931 best: 0.1493931 (400)   total: 3.65s    remaining: 41.9s
+    ## 500: learn: 0.1315766    test: 0.1419048 best: 0.1419048 (500)   total: 4.55s    remaining: 40.9s
+    ## 600: learn: 0.1246155    test: 0.1372702 best: 0.1372702 (600)   total: 5.45s    remaining: 39.9s
+    ## 700: learn: 0.1187299    test: 0.1332261 best: 0.1332261 (700)   total: 6.33s    remaining: 38.9s
+    ## 800: learn: 0.1135539    test: 0.1299086 best: 0.1299086 (800)   total: 7.23s    remaining: 37.9s
+    ## 900: learn: 0.1092132    test: 0.1273869 best: 0.1273869 (900)   total: 8.12s    remaining: 37s
+    ## 1000:    learn: 0.1052751    test: 0.1254555 best: 0.1254555 (998)   total: 9.03s    remaining: 36.1s
+    ## 1100:    learn: 0.1021420    test: 0.1238649 best: 0.1238565 (1099)  total: 9.94s    remaining: 35.2s
+    ## 1200:    learn: 0.0996795    test: 0.1227769 best: 0.1227736 (1199)  total: 10.9s    remaining: 34.4s
+    ## 1300:    learn: 0.0973729    test: 0.1218977 best: 0.1218921 (1298)  total: 11.8s    remaining: 33.4s
+    ## 1400:    learn: 0.0953014    test: 0.1210086 best: 0.1210085 (1399)  total: 12.7s    remaining: 32.5s
+    ## 1500:    learn: 0.0932589    test: 0.1203908 best: 0.1203908 (1500)  total: 13.6s    remaining: 31.6s
+    ## 1600:    learn: 0.0916012    test: 0.1197485 best: 0.1197455 (1596)  total: 14.5s    remaining: 30.7s
+    ## 1700:    learn: 0.0900183    test: 0.1193086 best: 0.1193086 (1700)  total: 15.4s    remaining: 29.8s
+    ## 1800:    learn: 0.0884368    test: 0.1187568 best: 0.1187568 (1800)  total: 16.3s    remaining: 28.9s
+    ## 1900:    learn: 0.0869875    test: 0.1183434 best: 0.1183434 (1900)  total: 17.2s    remaining: 28s
+    ## 2000:    learn: 0.0857432    test: 0.1180121 best: 0.1180121 (2000)  total: 18.1s    remaining: 27.1s
+    ## 2100:    learn: 0.0845322    test: 0.1177919 best: 0.1177919 (2100)  total: 19s  remaining: 26.2s
+    ## 2200:    learn: 0.0834684    test: 0.1175702 best: 0.1175670 (2197)  total: 19.9s    remaining: 25.3s
+    ## 2300:    learn: 0.0824500    test: 0.1174580 best: 0.1174477 (2298)  total: 20.8s    remaining: 24.4s
+    ## 2400:    learn: 0.0814324    test: 0.1173079 best: 0.1173079 (2400)  total: 21.7s    remaining: 23.5s
+    ## 2500:    learn: 0.0804397    test: 0.1171058 best: 0.1171034 (2491)  total: 22.6s    remaining: 22.6s
+    ## 2600:    learn: 0.0794627    test: 0.1169852 best: 0.1169852 (2600)  total: 23.5s    remaining: 21.7s
+    ## 2700:    learn: 0.0784878    test: 0.1169022 best: 0.1168870 (2650)  total: 24.4s    remaining: 20.8s
+    ## 2800:    learn: 0.0776579    test: 0.1167957 best: 0.1167957 (2800)  total: 25.3s    remaining: 19.9s
+    ## 2900:    learn: 0.0767674    test: 0.1167102 best: 0.1167095 (2899)  total: 26.2s    remaining: 19s
+    ## 3000:    learn: 0.0758981    test: 0.1166598 best: 0.1166439 (2986)  total: 27.1s    remaining: 18.1s
+    ## 3100:    learn: 0.0750977    test: 0.1166367 best: 0.1166183 (3075)  total: 28s  remaining: 17.2s
+    ## 3200:    learn: 0.0743912    test: 0.1165727 best: 0.1165596 (3190)  total: 28.9s    remaining: 16.3s
+    ## 3300:    learn: 0.0736714    test: 0.1165328 best: 0.1165268 (3245)  total: 29.8s    remaining: 15.4s
+    ## 3400:    learn: 0.0729281    test: 0.1164713 best: 0.1164681 (3399)  total: 30.7s    remaining: 14.4s
+    ## 3500:    learn: 0.0722066    test: 0.1164088 best: 0.1163956 (3473)  total: 31.6s    remaining: 13.5s
+    ## 3600:    learn: 0.0714780    test: 0.1164251 best: 0.1163956 (3473)  total: 32.5s    remaining: 12.6s
+    ## 3700:    learn: 0.0706155    test: 0.1163951 best: 0.1163863 (3617)  total: 33.4s    remaining: 11.7s
+    ## 3800:    learn: 0.0698717    test: 0.1162976 best: 0.1162955 (3798)  total: 34.3s    remaining: 10.8s
+    ## 3900:    learn: 0.0691744    test: 0.1162971 best: 0.1162836 (3888)  total: 35.2s    remaining: 9.93s
+    ## 4000:    learn: 0.0685293    test: 0.1162951 best: 0.1162812 (3933)  total: 36.2s    remaining: 9.03s
+    ## 4100:    learn: 0.0678657    test: 0.1163229 best: 0.1162812 (3933)  total: 37.1s    remaining: 8.13s
+    ## Stopped by overfitting detector  (200 iterations wait)
+    ## 
+    ## bestTest = 0.1162811684
+    ## bestIteration = 3933
+    ## 
+    ## Shrink model to first 3934 iterations.
+
+To verify our result, we make a prediction and calculate the RMSE log error on the validation set
+
+``` r
+prediction = catboost.predict(cb.model, val_pool)
+logrmse_val =  (mean( ((prediction-log(s$val$SalePrice))**2)))**0.5
+cat("Log error (validation):", logrmse_val)
+```
+
+    ## Log error (validation): 0.1162812
+
+Seems good\! Now we train the model on all training data (training + validation). We set the second parameter in catboost.train to NULL as we don’t supply any validation data.
+
+``` r
+cb.modelf = catboost.train(alltrain_pool,  NULL, params = cb.paras)
+```
+
+    ## 0:   learn: 0.3972835    total: 4.03ms   remaining: 20.1s
+    ## 100: learn: 0.2469311    total: 916ms    remaining: 44.4s
+    ## 200: learn: 0.1844478    total: 1.83s    remaining: 43.7s
+    ## 300: learn: 0.1559904    total: 2.75s    remaining: 42.9s
+    ## 400: learn: 0.1407558    total: 3.64s    remaining: 41.8s
+    ## 500: learn: 0.1309642    total: 4.54s    remaining: 40.8s
+    ## 600: learn: 0.1239503    total: 5.45s    remaining: 39.9s
+    ## 700: learn: 0.1187411    total: 6.36s    remaining: 39s
+    ## 800: learn: 0.1141205    total: 7.25s    remaining: 38s
+    ## 900: learn: 0.1103811    total: 8.16s    remaining: 37.1s
+    ## 1000:    learn: 0.1071739    total: 9.07s    remaining: 36.2s
+    ## 1100:    learn: 0.1043081    total: 9.97s    remaining: 35.3s
+    ## 1200:    learn: 0.1021137    total: 10.9s    remaining: 34.4s
+    ## 1300:    learn: 0.0999649    total: 11.8s    remaining: 33.5s
+    ## 1400:    learn: 0.0980403    total: 12.7s    remaining: 32.6s
+    ## 1500:    learn: 0.0963822    total: 13.6s    remaining: 31.7s
+    ## 1600:    learn: 0.0948042    total: 14.5s    remaining: 30.8s
+    ## 1700:    learn: 0.0931807    total: 15.4s    remaining: 29.9s
+    ## 1800:    learn: 0.0916737    total: 16.3s    remaining: 29s
+    ## 1900:    learn: 0.0904573    total: 17.3s    remaining: 28.1s
+    ## 2000:    learn: 0.0891984    total: 18.1s    remaining: 27.2s
+    ## 2100:    learn: 0.0879630    total: 19.1s    remaining: 26.3s
+    ## 2200:    learn: 0.0868724    total: 19.9s    remaining: 25.4s
+    ## 2300:    learn: 0.0858766    total: 20.8s    remaining: 24.5s
+    ## 2400:    learn: 0.0849283    total: 21.8s    remaining: 23.5s
+    ## 2500:    learn: 0.0839723    total: 22.7s    remaining: 22.6s
+    ## 2600:    learn: 0.0830420    total: 23.6s    remaining: 21.7s
+    ## 2700:    learn: 0.0821909    total: 24.5s    remaining: 20.8s
+    ## 2800:    learn: 0.0813601    total: 25.4s    remaining: 19.9s
+    ## 2900:    learn: 0.0805193    total: 26.3s    remaining: 19s
+    ## 3000:    learn: 0.0796804    total: 27.2s    remaining: 18.1s
+    ## 3100:    learn: 0.0789579    total: 28.1s    remaining: 17.2s
+    ## 3200:    learn: 0.0782867    total: 29s  remaining: 16.3s
+    ## 3300:    learn: 0.0776087    total: 29.9s    remaining: 15.4s
+    ## 3400:    learn: 0.0768693    total: 30.8s    remaining: 14.5s
+    ## 3500:    learn: 0.0762374    total: 31.7s    remaining: 13.6s
+    ## 3600:    learn: 0.0755818    total: 32.6s    remaining: 12.7s
+    ## 3700:    learn: 0.0749239    total: 33.5s    remaining: 11.8s
+    ## 3800:    learn: 0.0742657    total: 34.5s    remaining: 10.9s
+    ## 3900:    learn: 0.0736331    total: 35.4s    remaining: 9.96s
+    ## 4000:    learn: 0.0730605    total: 36.3s    remaining: 9.06s
+    ## 4100:    learn: 0.0724690    total: 37.2s    remaining: 8.16s
+    ## 4200:    learn: 0.0717551    total: 38.1s    remaining: 7.25s
+    ## 4300:    learn: 0.0711890    total: 39s  remaining: 6.34s
+    ## 4400:    learn: 0.0706128    total: 39.9s    remaining: 5.44s
+    ## 4500:    learn: 0.0700200    total: 40.9s    remaining: 4.53s
+    ## 4600:    learn: 0.0694611    total: 41.8s    remaining: 3.62s
+    ## 4700:    learn: 0.0689162    total: 42.7s    remaining: 2.71s
+    ## 4800:    learn: 0.0683931    total: 43.6s    remaining: 1.81s
+    ## 4900:    learn: 0.0678758    total: 44.5s    remaining: 899ms
+    ## 4999:    learn: 0.0673540    total: 45.4s    remaining: 0us
+
+## Obtaining predictions on test set
+
+Predict the SalePrice on the test data with the above model,
+
+``` r
+pred3.test = exp(catboost.predict(cb.model, test_pool))
+```
+
+As before plot the true SalePrice for the training data (blue), versus the test prediction (green) for SalePrice to make sure we have not made any errors,
+
+``` r
+hist(log(tt$train$SalePrice), main="Training (blue), test (green) predictions",
+     xlab = "SalePrice (log)", freq=FALSE, col=scales::alpha('blue',0.5), ylim=c(0,1.5))
+hist(log(pred3.test), freq=FALSE, add=T, col=scales::alpha('green',.5))
+```
+
+![](/images/housing-prices-kaggle/unnamed-chunk-42-1.png)<!-- -->
+
+## Save file and submit to Kaggle
+
+As it looks fine we save it to a file that we submit to Kaggle.
+
+``` r
+subm = cbind(test_id, pred3.test)
+colnames(subm) = c("Id", "SalePrice")
+write.csv(subm, "submission.csv", row.names=FALSE)
+
+# kaggle competitions submit -c "house-prices-advanced-regression-techniques" -f "submission.csv" -m "catboost! paraset al1"
+```
+
+With the catboost model above, I got an error of 0.122 on the Kaggle test set, which is pretty huge improvement from the xgboost result of 0.131, considering both models were implemented as-is except for a similar hyperparameter tuning process for both, based on a combination of cross-validation/parameter scanning (caret package) and guesswork.
