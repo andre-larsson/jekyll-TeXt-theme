@@ -38,7 +38,7 @@ output:
       - [Defining the model](#defining-the-model)
       - [Create final model and submit result](#create-final-model-and-submit-result)
   - [Conclusion](#conclusion)
-  - [Addendum: Catboost](#addendum-catboost)
+  - [Appendix: Catboost](#appendix-catboost)
       - [Installation](#installation)
       - [Preparing the data](#preparing-the-data)
       - [Training the model](#training-the-model)
@@ -1302,7 +1302,7 @@ To handle the missing values, we used the package missForest available in R whic
 
 Moving on, we found that the best score on the test set was obtained with a XGBoost model. We attempted to reduce the number of features in our data set with recursive feature selection (RFE), where we only kept features that improved the out-of-bag (OOB) error of a recursively trained Random Forest model. However, as the end result of the RFE was a model with less accuracy on the validation set, we kept all variables for the final model. Though the RFE approach was unsuccessful and reduced the accuracy of the final model, the results presented here could provide some insight into the dataset, e.g. suggesting important variables.
 
-# Addendum: Catboost
+# Appendix: Catboost
 
 With catboost, which is a gradient boosting method specializing on categorical/mixed data, developed by [https://en.wikipedia.org/wiki/Yandex](Yandex), even better results were possible, out-of-the-box.
 
