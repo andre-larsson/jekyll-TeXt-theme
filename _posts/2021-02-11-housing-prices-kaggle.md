@@ -1278,7 +1278,8 @@ pred2.test = exp(predict(xgb.fitall, dtest))
 To check the sanity of our result on the test set, we plot the distribution of value of salePrice in the training data (blue) and the distribution of predicted SalePrice for the test set using xgboost (green)
 
 ``` r
-hist(log(tt$train$SalePrice), main="Training (blue), test (green) predictions", xlab = "SalePrice (log)", freq=FALSE, col=scales::alpha('blue',0.5), ylim=c(0,1.5))
+hist(log(tt$train$SalePrice), main="Training (blue), test (green) predictions",
+     xlab = "SalePrice (log)", freq=FALSE, col=scales::alpha('blue',0.5), ylim=c(0,1.5))
 hist(log(pred2.test), freq=FALSE, add=T, col=scales::alpha('green',.5))
 ```
 
@@ -1306,7 +1307,7 @@ Moving on, we found that the best score on the test set was obtained with a XGBo
 
 With catboost, which is a gradient boosting method specializing on categorical/mixed data, developed by [https://en.wikipedia.org/wiki/Yandex](Yandex), even better results were possible, out-of-the-box.
 
-As I was impressed with the performance, I will give a quick introduction on how to install and run a catboost model in this Addendum.
+As I was impressed with the performance, I will give a quick introduction on how to install and run a catboost model here.
 
 ## Installation
 
@@ -1514,4 +1515,4 @@ write.csv(subm, "submission.csv", row.names=FALSE)
 # kaggle competitions submit -c "house-prices-advanced-regression-techniques" -f "submission.csv" -m "catboost! paraset al1"
 ```
 
-With the catboost model above, I got an error of 0.122 on the Kaggle test set, which is pretty huge improvement from the xgboost result of 0.131, considering both models were implemented as-is except for a similar hyperparameter tuning process for both, based on a combination of cross-validation/parameter scanning (caret package) and guesswork.
+With the catboost model above, I got an error of 0.122 on the Kaggle test set, which is pretty huge improvement from the xgboost result of 0.131, considering both models were implemented as-is except for a similar hyperparameter tuning process for both, based on cross-validation/parameter scanning (caret package).
