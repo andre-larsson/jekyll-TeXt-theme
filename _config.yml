@@ -20,7 +20,7 @@ text_skin: dark # "default" (default), "dark", "forest", "ocean", "chocolate", "
 highlight_theme: default # "tomorrow-night" (default), "tomorrow", "tomorrow-night", "tomorrow-night-eighties", "tomorrow-night-blue", "tomorrow-night-bright"
 url     : https://frizzledynasty.github.io # the base hostname & protocol for your site e.g. https://www.someone.com
 baseurl : # does not include hostname
-title   : Andre Larsson. Data Science, R, Python, Statistics.
+title   : Andre Larsson. Python, R, Machine Learning.
 description: > # this means to ignore newlines until "Language & timezone"
   Blogging about data science 
 
