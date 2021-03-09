@@ -1,5 +1,5 @@
 ---
-title: Introduction to Kaggle - House Prices, Advanced Regression Techniques.
+title: Introduction to Kaggle - House Prices, Advanced Regression Techniques
 author: Andre Larsson
 date: 2021-02-11
 key: kart21
