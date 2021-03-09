@@ -1,0 +1,14 @@
+---
+title: 
+author: Andre Larsson
+date: 
+key: 
+comment: true
+tags: 
+output:
+ md_document:
+  pandoc_args: ["--wrap=none"]
+  variant: gfm
+  toc: true
+  preserve_yaml: TRUE
+---
