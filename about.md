@@ -32,7 +32,6 @@ projects for learning more about programming, statistics and data science.
 The topics that likely will be covered are
 - Programming in R and Python
 - Machine Learning
-- Procrastination
 - Other software tutorials
 
 [https://andre-larsson.github.io/](https://andre-larsson.github.io/)
